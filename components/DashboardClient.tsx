@@ -309,37 +309,45 @@ export default function DashboardClient({ tab, employees, logs, users }: { tab: 
         </div>
       </div>
 
-      <CredentialModal 
-        isOpen={isCredentialModalOpen} 
-        onClose={() => setIsCredentialModalOpen(false)} 
-        employees={employees}
-      />
-      <ResetPasswordModal 
-        isOpen={isResetModalOpen} 
-        onClose={() => {
-          setIsResetModalOpen(false);
-          setSelectedUsername(null);
-        }} 
-        username={selectedUsername} 
-      />
-      <EmployeeModal 
-        isOpen={isEmployeeModalOpen} 
-        onClose={() => setIsEmployeeModalOpen(false)} 
-        mode={employeeModalMode}
-        employee={selectedEmployee}
-      />
-      <DeleteConfirmationModal 
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title={deleteType === 'employee' ? 'Terminate Personnel Record' : 'Revoke System Access'}
-        message={
-          deleteType === 'employee' 
-            ? `Warning: Deleting ${itemToDelete?.fname} ${itemToDelete?.lname} will permanently remove their record AND automatically revoke any active system credentials. This action cannot be undone.`
-            : `Warning: Deleting the credentials for "${itemToDelete}" will immediately block system access for this user. Personnel data will remain intact.`
-        }
-        isPending={isPending}
-      />
+      {isCredentialModalOpen && (
+        <CredentialModal 
+          isOpen={isCredentialModalOpen} 
+          onClose={() => setIsCredentialModalOpen(false)} 
+          employees={employees}
+        />
+      )}
+      {isResetModalOpen && (
+        <ResetPasswordModal 
+          isOpen={isResetModalOpen} 
+          onClose={() => {
+            setIsResetModalOpen(false);
+            setSelectedUsername(null);
+          }} 
+          username={selectedUsername} 
+        />
+      )}
+      {isEmployeeModalOpen && (
+        <EmployeeModal 
+          isOpen={isEmployeeModalOpen} 
+          onClose={() => setIsEmployeeModalOpen(false)} 
+          mode={employeeModalMode}
+          employee={selectedEmployee}
+        />
+      )}
+      {isDeleteModalOpen && (
+        <DeleteConfirmationModal 
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={handleConfirmDelete}
+          title={deleteType === 'employee' ? 'Terminate Personnel Record' : 'Revoke System Access'}
+          message={
+            deleteType === 'employee' 
+              ? `Warning: Deleting ${itemToDelete?.fname} ${itemToDelete?.lname} will permanently remove their record AND automatically revoke any active system credentials. This action cannot be undone.`
+              : `Warning: Deleting the credentials for "${itemToDelete}" will immediately block system access for this user. Personnel data will remain intact.`
+          }
+          isPending={isPending}
+        />
+      )}
     </main>
   );
 }
