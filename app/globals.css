@@ -1,28 +1,99 @@
 @import "tailwindcss";
 
+/* LIGHT MODE (Default) */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.05);
+  
+  --sidebar-bg: #ffffff;
+  --sidebar-border: rgba(0, 0, 0, 0.1);
+  
+  --primary-accent: #2563eb;
+  --primary-accent-hover: #1d4ed8;
+  --primary-accent-bg: rgba(37, 99, 235, 0.1);
+  --primary-accent-border: #2563eb;
+
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  
+  --table-header: #f1f5f9;
+  --table-border: rgba(0, 0, 0, 0.05);
+  --table-hover: rgba(0, 0, 0, 0.02);
+
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.1);
+  --input-focus: rgba(37, 99, 235, 0.3);
+  
+  --skeleton-shimmer: #f1f5f9;
+}
+
+/* DARK MODE */
+.dark {
+  --background: #050505;
+  --foreground: #ededed;
+  
+  --card-bg: #111111;
+  --card-border: rgba(255, 255, 255, 0.1);
+  
+  --sidebar-bg: rgba(0, 0, 0, 0.2);
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  
+  --primary-accent: rgba(255, 255, 255, 0.1);
+  --primary-accent-hover: rgba(255, 255, 255, 0.15);
+  --primary-accent-bg: rgba(255, 255, 255, 0.05);
+  --primary-accent-border: rgba(255, 255, 255, 0.2);
+  
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-dim: rgba(255, 255, 255, 0.3);
+  
+  --table-header: #0c0c0c;
+  --table-border: rgba(255, 255, 255, 0.05);
+  --table-hover: rgba(255, 255, 255, 0.02);
+
+  --input-bg: #1a1a1a;
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-focus: rgba(255, 255, 255, 0.2);
+  
+  --skeleton-shimmer: #1a1a1a;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-border: var(--sidebar-border);
+  
+  --color-primary-accent: var(--primary-accent);
+  --color-primary-accent-hover: var(--primary-accent-hover);
+  --color-primary-accent-bg: var(--primary-accent-bg);
+  --color-primary-accent-border: var(--primary-accent-border);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #050505;
-    --foreground: #ededed;
-  }
+  --color-skeleton-shimmer: var(--skeleton-shimmer);
+
+  --color-text-muted: var(--text-muted);
+  --color-text-dim: var(--text-dim);
+  
+  --color-table-header: var(--table-header);
+  --color-table-border: var(--table-border);
+  --color-table-hover: var(--table-hover);
+
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--input-border);
+  --color-input-focus: var(--input-focus);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Custom Scrollbar Styling */
@@ -36,17 +107,16 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--text-dim);
   border-radius: 10px;
   transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--text-muted);
 }
 
-/* For Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+  scrollbar-color: var(--text-dim) transparent;
 }

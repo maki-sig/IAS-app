@@ -9,31 +9,31 @@ export default function Home() {
   const [state, action, pending] = useActionState(login, null);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#050505] p-4 text-white selection:bg-white/20">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4 text-foreground selection:bg-primary-accent/20 transition-colors duration-300">
       {/* Background decoration - very subtle blobs for transparency depth */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none hidden dark:block">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="w-full max-w-md transition-all duration-700 ease-out animate-in fade-in slide-in-from-bottom-8">
-        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-white/5 p-8 backdrop-blur-2xl shadow-2xl transition-all duration-500 hover:border-white/20 hover:bg-white/[0.07]">
+      <div className="w-full max-w-md transition-all duration-700 ease-out animate-in fade-in slide-in-from-bottom-8 z-10">
+        <div className="relative overflow-hidden rounded-xl border border-card-border bg-card-bg p-8 backdrop-blur-2xl shadow-2xl transition-colors duration-500">
           <div className="mb-10 text-center space-y-2">
-            <h1 className="text-2xl font-light tracking-tight text-white/90">
+            <h1 className="text-2xl font-light tracking-tight text-foreground transition-colors">
               Welcome back
             </h1>
-            <p className="text-xs uppercase tracking-[0.2em] text-white/30 font-medium">
-              Information, Assurance, and Security
+            <p className="text-xs uppercase tracking-[0.2em] text-text-muted font-medium transition-colors">
+              Information Assurance, and Security
             </p>
           </div>
 
           <form action={action} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/40 ml-1">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.15em] text-text-dim ml-1 transition-colors">
                 Username
               </label>
               <div className="group relative transition-all">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-white/60 transition-all duration-300">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim group-focus-within:text-foreground transition-colors duration-300">
                   <User size={16} strokeWidth={1.5} />
                 </div>
                 <input
@@ -41,17 +41,17 @@ export default function Home() {
                   type="text"
                   placeholder="admin"
                   required
-                  className="w-full rounded-md border border-white/5 bg-white/[0.02] py-4 pl-12 pr-4 text-sm text-white placeholder:text-white/20 outline-none ring-1 ring-transparent transition-all duration-300 focus:border-white/20 focus:bg-white/[0.05] focus:ring-white/5"
+                  className="w-full rounded-md border border-input-border bg-input-bg py-4 pl-12 pr-4 text-sm text-foreground placeholder:text-text-dim outline-none ring-1 ring-transparent transition-all duration-300 focus:border-input-focus focus:ring-input-focus"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/40 ml-1">
+              <label className="text-[10px] font-semibold uppercase tracking-[0.15em] text-text-dim ml-1 transition-colors">
                 Password
               </label>
               <div className="group relative transition-all">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-white/60 transition-all duration-300">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-dim group-focus-within:text-foreground transition-colors duration-300">
                   <Lock size={16} strokeWidth={1.5} />
                 </div>
                 <input
@@ -59,12 +59,12 @@ export default function Home() {
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   required
-                  className="w-full rounded-md border border-white/5 bg-white/[0.02] py-4 pl-12 pr-12 text-sm text-white placeholder:text-white/20 outline-none ring-1 ring-transparent transition-all duration-300 focus:border-white/20 focus:bg-white/[0.05] focus:ring-white/5"
+                  className="w-full rounded-md border border-input-border bg-input-bg py-4 pl-12 pr-12 text-sm text-foreground placeholder:text-text-dim outline-none ring-1 ring-transparent transition-all duration-300 focus:border-input-focus focus:ring-input-focus"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/60 transition-all duration-300"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-text-dim hover:text-foreground transition-colors duration-300"
                 >
                   {showPassword ? <EyeOff size={16} strokeWidth={1.5} /> : <Eye size={16} strokeWidth={1.5} />}
                 </button>
@@ -72,7 +72,7 @@ export default function Home() {
             </div>
 
             {state?.error && (
-              <div className="text-[11px] font-medium text-red-400 bg-red-500/10 border border-red-500/40 backdrop-blur-md rounded-md p-3 text-center animate-in fade-in zoom-in-95 duration-300 shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+              <div className="text-[11px] font-medium text-red-500 bg-red-500/10 border border-red-500/20 backdrop-blur-md rounded-md p-3 text-center animate-in fade-in zoom-in-95 duration-300">
                 {state.error}
               </div>
             )}
@@ -80,7 +80,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={pending}
-              className="relative flex w-full items-center justify-center overflow-hidden rounded-md bg-white py-4 text-xs font-bold uppercase tracking-widest text-black transition-all duration-500 hover:bg-white/90 hover:scale-[1.01] active:scale-[0.99] shadow-[0_4px_20px_rgba(255,255,255,0.05)] active:shadow-none disabled:opacity-50 disabled:scale-100"
+              className="relative flex w-full items-center justify-center overflow-hidden rounded-md bg-primary-accent border border-primary-accent-border py-4 text-xs font-bold uppercase tracking-widest text-white transition-all duration-500 hover:bg-primary-accent-hover hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:scale-100"
             >
               {pending ? (
                 <Loader2 size={16} className="animate-spin" />

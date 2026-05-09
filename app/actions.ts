@@ -6,6 +6,18 @@ import { cookies } from "next/headers";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 
+// Security Validation Helper
+const validateSecurityInput = (value: string, fieldName: string) => {
+  const forbiddenChars = /[<>"';()]/;
+  if (forbiddenChars.test(value)) {
+    return `${fieldName} contains forbidden characters for security reasons.`;
+  }
+  return null;
+};
+
+const nameRegex = /^[a-zA-Z0-9.\s-]+$/;
+const phMobileRegex = /^09\d{9}$/;
+
 export async function login(state: any, formData: FormData) {
   const username = formData.get("username") as string;
   const password = formData.get("password") as string;
@@ -16,7 +28,6 @@ export async function login(state: any, formData: FormData) {
 
   const supabase = await createClient();
 
-  // 1. Fetch user from USER table
   const { data: user, error: userError } = await supabase
     .from("USER")
     .select("*")
@@ -28,7 +39,6 @@ export async function login(state: any, formData: FormData) {
     return { error: "Invalid credentials" };
   }
 
-  // 2. Check for Account Lockout (5 failed attempts = 5 min lockout)
   if (user.failed_attempt_count >= 5) {
     const lastAttempt = new Date(user.last_failed_attempt).getTime();
     const now = new Date().getTime();
@@ -42,13 +52,11 @@ export async function login(state: any, formData: FormData) {
     }
   }
 
-  // 3. Verify password hash using SHA256
   const hashedInput = crypto.createHash('sha256').update(password).digest('hex');
   const storedHash = user.hash_password.trim();
   const isValid = hashedInput === storedHash;
 
   if (!isValid) {
-    // Increment failed_attempt_count and log the time
     await supabase
       .from("USER")
       .update({
@@ -61,7 +69,6 @@ export async function login(state: any, formData: FormData) {
     return { error: "Invalid credentials" };
   }
 
-  // 4. Success! Reset failed attempts
   await supabase
     .from("USER")
     .update({
@@ -72,7 +79,6 @@ export async function login(state: any, formData: FormData) {
 
   await logAttempt(username, "P");
 
-  // 5. Fetch role from EMPLOYEE
   const { data: employee, error: empError } = await supabase
     .from("EMPLOYEE")
     .select("role")
@@ -83,7 +89,6 @@ export async function login(state: any, formData: FormData) {
     return { error: "Employee record not found" };
   }
 
-  // 6. Set a simple session cookie
   const cookieStore = await cookies();
   cookieStore.set("user_role", employee.role, {
     httpOnly: true,
@@ -96,7 +101,6 @@ export async function login(state: any, formData: FormData) {
     path: "/",
   });
 
-  // 7. Redirect based on role
   if (employee.role === "admin") {
     redirect("/dashboard");
   } else {
@@ -110,7 +114,6 @@ export async function createCredential(state: any, formData: FormData) {
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
 
-  // Cybersecurity Validation
   if (!e_id || !username || !password || !confirmPassword) {
     return { error: "All fields are required" };
   }
@@ -135,7 +138,6 @@ export async function createCredential(state: any, formData: FormData) {
 
   const supabase = await createClient();
 
-  // Check if employee exists
   const { data: employee, error: empError } = await supabase
     .from("EMPLOYEE")
     .select("e_id")
@@ -146,7 +148,6 @@ export async function createCredential(state: any, formData: FormData) {
     return { error: "Employee ID not found" };
   }
 
-  // Check if username already exists
   const { data: existingUser } = await supabase
     .from("USER")
     .select("username")
@@ -157,10 +158,8 @@ export async function createCredential(state: any, formData: FormData) {
     return { error: "Username already exists" };
   }
 
-  // Hash password with SHA256
   const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
-  // Insert into USER table
   const { error: insertError } = await supabase
     .from("USER")
     .insert({
@@ -202,16 +201,13 @@ export async function resetPassword(state: any, formData: FormData) {
   }
 
   const supabase = await createClient();
-
-  // Hash password with SHA256
   const hashedPassword = crypto.createHash('sha256').update(password).digest('hex');
 
-  // Update USER table
   const { error: updateError } = await supabase
     .from("USER")
     .update({
       hash_password: hashedPassword,
-      failed_attempt_count: 0, // Reset lockout status upon admin reset
+      failed_attempt_count: 0,
       last_failed_attempt: null
     })
     .eq("username", username);
@@ -219,6 +215,147 @@ export async function resetPassword(state: any, formData: FormData) {
   if (updateError) {
     console.error(updateError);
     return { error: "Failed to reset password" };
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function registerEmployee(state: any, formData: FormData) {
+  const fields = ['fname', 'mname', 'lname', 'address', 'contact_no'];
+  for (const field of fields) {
+    const val = formData.get(field) as string;
+    if (val) {
+      const error = validateSecurityInput(val, field);
+      if (error) return { error };
+    }
+  }
+
+  const fname = formData.get("fname") as string;
+  const mname = formData.get("mname") as string;
+  const lname = formData.get("lname") as string;
+  const sex = formData.get("sex") as string;
+  const address = formData.get("address") as string;
+  const birth_date = formData.get("birth_date") as string;
+  const role = formData.get("role") as string;
+  const hire_date = formData.get("hire_date") as string;
+  const contact_no = formData.get("contact_no") as string;
+
+  if (!fname || !lname || !sex || !role || !hire_date || !contact_no) {
+    return { error: "Required fields are missing." };
+  }
+
+  if (!nameRegex.test(fname) || !nameRegex.test(lname) || (mname && !nameRegex.test(mname))) {
+    return { error: "Names can only contain letters, numbers, spaces, dots, and hyphens." };
+  }
+
+  if (!phMobileRegex.test(contact_no)) {
+    return { error: "Contact number must be exactly 11 digits and start with 09 (Philippine Standard)." };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("EMPLOYEE").insert({
+    fname, mname, lname, sex, address, birth_date, role, hire_date, contact_no
+  });
+
+  if (error) {
+    console.error(error);
+    return { error: "Failed to register employee." };
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function updateEmployee(state: any, formData: FormData) {
+  const e_id = formData.get("e_id") as string;
+  if (!e_id) return { error: "Employee ID is missing." };
+
+  const fields = ['fname', 'mname', 'lname', 'address', 'contact_no'];
+  for (const field of fields) {
+    const val = formData.get(field) as string;
+    if (val) {
+      const error = validateSecurityInput(val, field);
+      if (error) return { error };
+    }
+  }
+
+  const fname = formData.get("fname") as string;
+  const mname = formData.get("mname") as string;
+  const lname = formData.get("lname") as string;
+  const sex = formData.get("sex") as string;
+  const address = formData.get("address") as string;
+  const birth_date = formData.get("birth_date") as string;
+  const role = formData.get("role") as string;
+  const hire_date = formData.get("hire_date") as string;
+  const contact_no = formData.get("contact_no") as string;
+
+  if (!fname || !lname || !sex || !role || !hire_date || !contact_no) {
+    return { error: "Required fields are missing." };
+  }
+
+  if (!nameRegex.test(fname) || !nameRegex.test(lname) || (mname && !nameRegex.test(mname))) {
+    return { error: "Names can only contain letters, numbers, spaces, dots, and hyphens." };
+  }
+
+  if (!phMobileRegex.test(contact_no)) {
+    return { error: "Contact number must be exactly 11 digits and start with 09 (Philippine Standard)." };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("EMPLOYEE").update({
+    fname, mname, lname, sex, address, birth_date, role, hire_date, contact_no
+  }).eq("e_id", parseInt(e_id));
+
+  if (error) {
+    console.error(error);
+    return { error: "Failed to update employee." };
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function deleteEmployee(e_id: number) {
+  const supabase = await createClient();
+
+  const { error: userDeleteError } = await supabase
+    .from("USER")
+    .delete()
+    .eq("e_id", e_id);
+
+  if (userDeleteError) {
+    console.error("Error deleting associated user:", userDeleteError);
+    return { error: "Failed to delete associated user credentials." };
+  }
+
+  const { error: empDeleteError } = await supabase
+    .from("EMPLOYEE")
+    .delete()
+    .eq("e_id", e_id);
+
+  if (empDeleteError) {
+    console.error("Error deleting employee:", empDeleteError);
+    return { error: "Failed to delete employee record." };
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function deleteCredential(username: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from("USER")
+    .delete()
+    .eq("username", username);
+
+  if (error) {
+    console.error("Error deleting credential:", error);
+    return { error: "Failed to delete credential." };
   }
 
   revalidatePath("/dashboard");
