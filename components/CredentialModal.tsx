@@ -16,8 +16,7 @@ const USERNAME_REGEX = /^[A-Za-z0-9-]+$/;
 function validateUsername(value: string): string | null {
   if (!value) return 'Username is required.';
   if (value.length < 1 || value.length > 39) return 'Username must be between 1 and 39 characters.';
-  if (!USERNAME_REGEX.test(value)) return 'Only letters, numbers, and the symbols ! @ # $ % ^ & * ( ) _ + - = are allowed.';
-  if (/--/.test(value)) return 'Username cannot contain consecutive hyphens.';
+  if (!USERNAME_REGEX.test(value)) return 'Only letters, numbers, and hyphens are allowed.';  if (/--/.test(value)) return 'Username cannot contain consecutive hyphens.';
   return null;
 }
 
