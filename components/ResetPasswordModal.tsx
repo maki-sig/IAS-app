@@ -47,6 +47,7 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
   const [state, action, pending] = useActionState(resetPassword, null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const [fields, setFields] = useState({ password: '', confirmPassword: '' });
   const [touched, setTouched] = useState({ password: false, confirmPassword: false });
@@ -71,9 +72,15 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
   const handleSubmitAttempt = () =>
     setTouched({ password: true, confirmPassword: true });
 
-  useEffect(() => { if (state?.success) onClose(); }, [state, onClose]);
+  const handleClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => onClose(), 260);
+  };
 
-  if (!isOpen || !username) return null;
+  useEffect(() => { if (state?.success) handleClose(); }, [state?.success]);
+
+  if ((!isOpen && !isClosing) || !username) return null;
 
   const inputBase = "w-full bg-input-bg border rounded-md py-3 pl-4 pr-11 text-sm text-foreground outline-none transition-all";
   const inputNormal = `${inputBase} border-input-border focus:border-input-focus`;
@@ -83,8 +90,14 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
   const strengthColor = strengthFilled <= 2 ? 'bg-red-500' : strengthFilled <= 4 ? 'bg-yellow-500' : 'bg-green-500';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
+    <div
+      onClick={handleClose}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className={`relative w-full max-w-md bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-scale'}`}
+      >
         <header className="px-6 py-5 border-b border-card-border flex items-center justify-between transition-colors">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-input-bg border border-input-border transition-colors">
@@ -95,7 +108,7 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
               <p className="text-[10px] text-text-dim uppercase tracking-widest font-medium transition-colors">Account: {username}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-text-dim hover:text-foreground transition-colors">
+          <button onClick={handleClose} className="text-text-dim hover:text-foreground transition-colors">
             <X size={20} />
           </button>
         </header>

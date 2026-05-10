@@ -47,6 +47,7 @@ type ValidatedField = NameField | 'address' | 'birth_date' | 'hire_date';
 export default function EmployeeModal({ isOpen, onClose, mode, employee }: EmployeeModalProps) {
   const currentAction = mode === 'register' ? registerEmployee : updateEmployee;
   const [state, action, pending] = useActionState(currentAction, null);
+  const [isClosing, setIsClosing] = useState(false);
 
   const [fields, setFields] = useState({
     fname: employee?.fname || '',
@@ -94,11 +95,17 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
     setTouched({ fname: false, mname: false, lname: false, address: false, birth_date: false, hire_date: false });
   }, [employee]);
 
+  const handleClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => onClose(), 260);
+  };
+
   useEffect(() => {
     if (state?.success) {
-      onClose();
+      handleClose();
     }
-  }, [state, onClose]);
+  }, [state?.success]);
 
   const set = (key: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setFields(prev => ({ ...prev, [key]: e.target.value }));
@@ -120,11 +127,17 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
   const inputError  = `${inputBase} border-red-500/60 focus:border-red-500`;
   const cls = (key: ValidatedField) => errors[key] ? inputError : inputNormal;
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="relative w-full max-w-2xl bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
+    <div
+      onClick={handleClose}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className={`relative w-full max-w-2xl bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-slide-up'}`}
+      >
         <header className="px-6 py-5 border-b border-card-border flex items-center justify-between transition-colors">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-input-bg border border-input-border transition-colors">
@@ -137,7 +150,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
               {mode === 'edit' && <p className="text-[10px] text-text-dim uppercase tracking-widest font-medium transition-colors">ID: {employee?.e_id}</p>}
             </div>
           </div>
-          <button onClick={onClose} className="text-text-dim hover:text-foreground transition-colors">
+          <button onClick={handleClose} className="text-text-dim hover:text-foreground transition-colors">
             <X size={20} />
           </button>
         </header>
@@ -146,7 +159,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
           {mode === 'edit' && <input type="hidden" name="e_id" value={employee?.e_id} />}
 
           {/* Name row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
             {/* First Name */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">First Name</label>
@@ -200,7 +213,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '0.2s', animationFillMode: 'both' }}>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Sex</label>
               <select
@@ -234,7 +247,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
             <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Address</label>
             <input
               name="address"
@@ -251,7 +264,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '0.4s', animationFillMode: 'both' }}>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Role</label>
               <select
@@ -306,7 +319,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
             </div>
           )}
 
-          <div className="pt-6 border-t border-card-border transition-colors">
+          <div className="pt-6 border-t border-card-border transition-colors animate-in fade-in slide-in-from-bottom-2 duration-300" style={{ animationDelay: '0.5s', animationFillMode: 'both' }}>
             <button
               type="submit"
               disabled={pending || hasErrors}

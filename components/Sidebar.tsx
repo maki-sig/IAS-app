@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import Link from 'next/link';
 import { useTheme } from './ThemeProvider';
 import { 
   Users, 
@@ -16,11 +15,12 @@ import {
 import { logout } from '@/app/actions';
 
 interface SidebarProps {
-  tab: string;
+  activeTab: string;
   username: string;
+  onTabChange: (tab: string) => void;
 }
 
-export default function Sidebar({ tab, username }: SidebarProps) {
+export default function Sidebar({ activeTab, username, onTabChange }: SidebarProps) {
   const { theme, toggleTheme } = useTheme();
 
   const navItems = [
@@ -48,14 +48,15 @@ export default function Sidebar({ tab, username }: SidebarProps) {
       <nav className="flex-1 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = tab === item.id;
+          const isActive = activeTab === item.id;
           return (
-            <Link 
+            <button
               key={item.id}
-              href={`?tab=${item.id}`}
-              className={`flex items-center justify-between group px-3 py-2.5 rounded-md transition-all duration-300 ${
-                isActive 
-                  ? 'bg-primary-accent border border-primary-accent-border text-white shadow-lg' 
+              type="button"
+              onClick={() => onTabChange(item.id)}
+              className={`flex w-full items-center justify-between group px-3 py-2.5 rounded-md transition-all duration-300 ${
+                isActive
+                  ? 'bg-primary-accent border border-primary-accent-border text-white shadow-lg'
                   : 'text-text-muted hover:bg-card-border hover:text-foreground border border-transparent'
               }`}
             >
@@ -64,13 +65,12 @@ export default function Sidebar({ tab, username }: SidebarProps) {
                 <span className="text-[13px] font-medium tracking-wide">{item.label}</span>
               </div>
               {isActive && <ChevronRight size={12} className="text-white/80" />}
-            </Link>
+            </button>
           );
         })}
       </nav>
 
       <div className="mt-auto pt-5 border-t border-sidebar-border space-y-3 transition-colors duration-300">
-        {/* User Profile Badge */}
         <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-card-bg border border-card-border transition-colors duration-300">
           <div className="h-8 w-8 rounded-full bg-primary-accent-bg flex items-center justify-center flex-shrink-0 transition-colors duration-300">
             <User size={14} className="text-primary-accent transition-colors duration-300" />
@@ -81,7 +81,6 @@ export default function Sidebar({ tab, username }: SidebarProps) {
           </div>
         </div>
 
-        {/* Sign Out Form */}
         <form action={logout}>
           <button className="flex w-full items-center gap-2.5 px-3 py-2.5 rounded-md bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 transition-all duration-300 group">
             <LogOut size={16} strokeWidth={1.5} className="group-hover:translate-x-1 transition-transform" />

@@ -62,6 +62,7 @@ function StrengthRow({ met, label }: { met: boolean; label: string }) {
 export default function CredentialModal({ isOpen, onClose, employees }: CredentialModalProps) {
   const [state, action, pending] = useActionState(createCredential, null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const [fields, setFields] = useState({ e_id: '', username: '', password: '', confirmPassword: '' });
   const [touched, setTouched] = useState({ username: false, password: false, confirmPassword: false });
@@ -88,9 +89,17 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
   const handleSubmitAttempt = () =>
     setTouched({ username: true, password: true, confirmPassword: true });
 
-  useEffect(() => { if (state?.success) onClose(); }, [state, onClose]);
+  const handleClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => onClose(), 260);
+  };
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (state?.success) handleClose();
+  }, [state?.success]);
+
+  if (!isOpen && !isClosing) return null;
 
   const inputBase = "w-full bg-input-bg border rounded-md py-3 px-4 text-sm text-foreground outline-none transition-all";
   const inputNormal = `${inputBase} border-input-border focus:border-input-focus`;
@@ -101,8 +110,14 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
   const strengthColor = passwordStrengthFilled <= 2 ? 'bg-red-500' : passwordStrengthFilled <= 4 ? 'bg-yellow-500' : 'bg-green-500';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="relative w-full max-w-md bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
+    <div
+      onClick={handleClose}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className={`relative w-full max-w-md bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-scale'}`}
+      >
         <header className="px-6 py-5 border-b border-card-border flex items-center justify-between transition-colors">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-input-bg border border-input-border transition-colors">
@@ -110,7 +125,7 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
             </div>
             <h3 className="text-sm font-bold uppercase tracking-widest text-foreground transition-colors">New Credential</h3>
           </div>
-          <button onClick={onClose} className="text-text-dim hover:text-foreground transition-colors">
+          <button onClick={handleClose} className="text-text-dim hover:text-foreground transition-colors">
             <X size={20} />
           </button>
         </header>
