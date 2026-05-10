@@ -11,6 +11,22 @@ interface EmployeeModalProps {
   employee?: any | null;
 }
 
+// Must match the server-side nameRegex in actions.ts
+const NAME_REGEX = /^[A-Za-z'\-.\s]+$/;
+
+// Capitalize the first letter after word-boundary characters (space, hyphen, apostrophe)
+function toNameCase(value: string): string {
+  return value.replace(/(^|[\s\-'])([a-z])/g, (_, sep, letter) => sep + letter.toUpperCase());
+}
+
+function validateName(value: string, required: boolean): string | null {
+  if (!value.trim()) return required ? 'This field is required.' : null;
+  if (!NAME_REGEX.test(value)) return "Only letters, spaces, apostrophes ( ' ), hyphens ( - ), and periods ( . ) are allowed.";
+  return null;
+}
+
+type NameField = 'fname' | 'mname' | 'lname';
+
 export default function EmployeeModal({ isOpen, onClose, mode, employee }: EmployeeModalProps) {
   const currentAction = mode === 'register' ? registerEmployee : updateEmployee;
   const [state, action, pending] = useActionState(currentAction, null);
@@ -27,6 +43,22 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
     contact_no: employee?.contact_no || '',
   });
 
+  // Track which name fields have been blurred (interacted with)
+  const [touched, setTouched] = useState<Record<NameField, boolean>>({
+    fname: false,
+    mname: false,
+    lname: false,
+  });
+
+  // Computed per-field errors — only shown after the field has been touched
+  const nameErrors: Record<NameField, string | null> = {
+    fname: touched.fname ? validateName(fields.fname, true) : null,
+    mname: touched.mname ? validateName(fields.mname, false) : null,
+    lname: touched.lname ? validateName(fields.lname, true) : null,
+  };
+
+  const hasNameErrors = Object.values(nameErrors).some(Boolean);
+
   // Re-sync fields when the employee prop changes (e.g. switching which record to edit)
   useEffect(() => {
     setFields({
@@ -40,6 +72,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
       hire_date: employee?.hire_date || '',
       contact_no: employee?.contact_no || '',
     });
+    setTouched({ fname: false, mname: false, lname: false });
   }, [employee]);
 
   useEffect(() => {
@@ -50,6 +83,22 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
 
   const set = (key: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setFields(prev => ({ ...prev, [key]: e.target.value }));
+
+  // Like set(), but applies title-case transform for name fields
+  const setName = (key: NameField) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFields(prev => ({ ...prev, [key]: toNameCase(e.target.value) }));
+
+  const touch = (key: NameField) => () =>
+    setTouched(prev => ({ ...prev, [key]: true }));
+
+  // Touch all name fields on submit attempt so errors surface immediately
+  const handleSubmitAttempt = () => {
+    setTouched({ fname: true, mname: true, lname: true });
+  };
+
+  const inputBase = "w-full bg-input-bg border rounded-md py-2.5 px-4 text-sm text-foreground outline-none transition-all";
+  const inputNormal = `${inputBase} border-input-border focus:border-input-focus`;
+  const inputError = `${inputBase} border-red-500/60 focus:border-red-500`;
 
   if (!isOpen) return null;
 
@@ -76,7 +125,9 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
         <form action={action} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
           {mode === 'edit' && <input type="hidden" name="e_id" value={employee?.e_id} />}
 
+          {/* Name row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* First Name */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">First Name</label>
               <input
@@ -84,20 +135,32 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 type="text"
                 required
                 value={fields.fname}
-                onChange={set('fname')}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                onChange={setName('fname')}
+                onBlur={touch('fname')}
+                className={nameErrors.fname ? inputError : inputNormal}
               />
+              {nameErrors.fname && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{nameErrors.fname}</p>
+              )}
             </div>
+
+            {/* Middle Name */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Middle Name</label>
               <input
                 name="mname"
                 type="text"
                 value={fields.mname}
-                onChange={set('mname')}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                onChange={setName('mname')}
+                onBlur={touch('mname')}
+                className={nameErrors.mname ? inputError : inputNormal}
               />
+              {nameErrors.mname && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{nameErrors.mname}</p>
+              )}
             </div>
+
+            {/* Last Name */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Last Name</label>
               <input
@@ -105,9 +168,13 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 type="text"
                 required
                 value={fields.lname}
-                onChange={set('lname')}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                onChange={setName('lname')}
+                onBlur={touch('lname')}
+                className={nameErrors.lname ? inputError : inputNormal}
               />
+              {nameErrors.lname && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{nameErrors.lname}</p>
+              )}
             </div>
           </div>
 
@@ -134,7 +201,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 required
                 value={fields.birth_date}
                 onChange={set('birth_date')}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                className={inputNormal}
               />
             </div>
           </div>
@@ -147,7 +214,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
               required
               value={fields.address}
               onChange={set('address')}
-              className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+              className={inputNormal}
             />
           </div>
 
@@ -175,7 +242,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 required
                 value={fields.hire_date}
                 onChange={set('hire_date')}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                className={inputNormal}
               />
             </div>
             <div className="space-y-1.5">
@@ -189,7 +256,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 placeholder="09XXXXXXXXX"
                 value={fields.contact_no}
                 onChange={set('contact_no')}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                className={inputNormal}
               />
             </div>
           </div>
@@ -203,7 +270,8 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
           <div className="pt-6 border-t border-card-border transition-colors">
             <button
               type="submit"
-              disabled={pending}
+              disabled={pending || hasNameErrors}
+              onClick={handleSubmitAttempt}
               className="w-full flex items-center justify-center bg-primary-accent border border-primary-accent-border text-white py-4 rounded-md text-xs font-bold uppercase tracking-widest hover:bg-primary-accent-hover transition-all disabled:opacity-50"
             >
               {pending ? <Loader2 size={18} className="animate-spin" /> : mode === 'register' ? "Save Employee Record" : "Update Employee Record"}

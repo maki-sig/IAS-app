@@ -15,7 +15,7 @@ const validateSecurityInput = (value: string, fieldName: string) => {
   return null;
 };
 
-const nameRegex = /^[a-zA-Z0-9.\s-]+$/;
+const nameRegex = /^[A-Za-z'\-.\s]+$/;
 const phMobileRegex = /^09\d{9}$/;
 
 export async function login(state: any, formData: FormData) {
