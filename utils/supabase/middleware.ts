@@ -31,9 +31,30 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake can make it very hard to debug
   // why user-sessions are being dropped.
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // Check for authentication via username cookie (custom auth)
+  const isAuthenticated = !!request.cookies.get('username')?.value
+
+  if (
+    !isAuthenticated &&
+    !request.nextUrl.pathname.startsWith('/login') &&
+    !request.nextUrl.pathname.startsWith('/api') &&
+    request.nextUrl.pathname !== '/'
+  ) {
+    // This route requires authentication, redirect to login
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
+  }
+
+  // Role-based access control for dashboard
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    const role = request.cookies.get('user_role')?.value
+    if (role !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/welcome'
+      return NextResponse.redirect(url)
+    }
+  }
 
   return supabaseResponse
 }
