@@ -19,12 +19,12 @@ export default async function WelcomePage() {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-input-bg border border-input-border transition-colors">
             <UserIcon size={32} className="text-text-muted" />
           </div>
-          
+
           <h1 className="text-3xl font-light tracking-tight text-foreground mb-2 transition-colors">
             Welcome, {username}
           </h1>
           <p className="text-sm text-text-muted mb-10 transition-colors">
-            Internal Access System
+            IAS - Employee Hub
           </p>
 
           <form action={logout}>

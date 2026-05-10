@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState, useEffect } from 'react';
+import React, { useState, useActionState, useEffect } from 'react';
 import { registerEmployee, updateEmployee } from '@/app/actions';
 import { X, UserPlus, Loader2, Save } from 'lucide-react';
 
@@ -12,15 +12,44 @@ interface EmployeeModalProps {
 }
 
 export default function EmployeeModal({ isOpen, onClose, mode, employee }: EmployeeModalProps) {
-  // Use the appropriate action based on mode
   const currentAction = mode === 'register' ? registerEmployee : updateEmployee;
   const [state, action, pending] = useActionState(currentAction, null);
+
+  const [fields, setFields] = useState({
+    fname: employee?.fname || '',
+    mname: employee?.mname || '',
+    lname: employee?.lname || '',
+    sex: employee?.sex?.trim() || '',
+    birth_date: employee?.birth_date || '',
+    address: employee?.address || '',
+    role: employee?.role || '',
+    hire_date: employee?.hire_date || '',
+    contact_no: employee?.contact_no || '',
+  });
+
+  // Re-sync fields when the employee prop changes (e.g. switching which record to edit)
+  useEffect(() => {
+    setFields({
+      fname: employee?.fname || '',
+      mname: employee?.mname || '',
+      lname: employee?.lname || '',
+      sex: employee?.sex?.trim() || '',
+      birth_date: employee?.birth_date || '',
+      address: employee?.address || '',
+      role: employee?.role || '',
+      hire_date: employee?.hire_date || '',
+      contact_no: employee?.contact_no || '',
+    });
+  }, [employee]);
 
   useEffect(() => {
     if (state?.success) {
       onClose();
     }
   }, [state, onClose]);
+
+  const set = (key: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setFields(prev => ({ ...prev, [key]: e.target.value }));
 
   if (!isOpen) return null;
 
@@ -46,35 +75,38 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
 
         <form action={action} className="p-8 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
           {mode === 'edit' && <input type="hidden" name="e_id" value={employee?.e_id} />}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">First Name</label>
-              <input 
-                name="fname" 
-                type="text" 
-                required 
-                defaultValue={employee?.fname || ''}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all" 
+              <input
+                name="fname"
+                type="text"
+                required
+                value={fields.fname}
+                onChange={set('fname')}
+                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Middle Name</label>
-              <input 
-                name="mname" 
-                type="text" 
-                defaultValue={employee?.mname || ''}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all" 
+              <input
+                name="mname"
+                type="text"
+                value={fields.mname}
+                onChange={set('mname')}
+                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Last Name</label>
-              <input 
-                name="lname" 
-                type="text" 
-                required 
-                defaultValue={employee?.lname || ''}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all" 
+              <input
+                name="lname"
+                type="text"
+                required
+                value={fields.lname}
+                onChange={set('lname')}
+                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
               />
             </div>
           </div>
@@ -82,10 +114,11 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Sex</label>
-              <select 
-                name="sex" 
-                required 
-                defaultValue={employee?.sex?.trim() || ''}
+              <select
+                name="sex"
+                required
+                value={fields.sex}
+                onChange={set('sex')}
                 className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all appearance-none cursor-pointer"
               >
                 <option value="" disabled className="bg-card-bg">Select</option>
@@ -95,34 +128,37 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Birth Date</label>
-              <input 
-                name="birth_date" 
-                type="date" 
-                required 
-                defaultValue={employee?.birth_date || ''}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all" 
+              <input
+                name="birth_date"
+                type="date"
+                required
+                value={fields.birth_date}
+                onChange={set('birth_date')}
+                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Address</label>
-            <input 
-              name="address" 
-              type="text" 
-              required 
-              defaultValue={employee?.address || ''}
-              className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all" 
+            <input
+              name="address"
+              type="text"
+              required
+              value={fields.address}
+              onChange={set('address')}
+              className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Role</label>
-              <select 
-                name="role" 
-                required 
-                defaultValue={employee?.role || ''}
+              <select
+                name="role"
+                required
+                value={fields.role}
+                onChange={set('role')}
                 className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all appearance-none cursor-pointer"
               >
                 <option value="" disabled className="bg-card-bg">Select Role</option>
@@ -133,25 +169,27 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Hire Date</label>
-              <input 
-                name="hire_date" 
-                type="date" 
-                required 
-                defaultValue={employee?.hire_date || ''}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all" 
+              <input
+                name="hire_date"
+                type="date"
+                required
+                value={fields.hire_date}
+                onChange={set('hire_date')}
+                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
               />
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Contact No. (11 Digits)</label>
-              <input 
-                name="contact_no" 
-                type="text" 
-                required 
+              <input
+                name="contact_no"
+                type="text"
+                required
                 maxLength={11}
                 pattern="09[0-9]{9}"
                 placeholder="09XXXXXXXXX"
-                defaultValue={employee?.contact_no || ''}
-                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all" 
+                value={fields.contact_no}
+                onChange={set('contact_no')}
+                className="w-full bg-input-bg border border-input-border rounded-md py-2.5 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
               />
             </div>
           </div>
@@ -163,7 +201,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
           )}
 
           <div className="pt-6 border-t border-card-border transition-colors">
-            <button 
+            <button
               type="submit"
               disabled={pending}
               className="w-full flex items-center justify-center bg-primary-accent border border-primary-accent-border text-white py-4 rounded-md text-xs font-bold uppercase tracking-widest hover:bg-primary-accent-hover transition-all disabled:opacity-50"

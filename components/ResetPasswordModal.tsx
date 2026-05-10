@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useActionState, useEffect } from 'react';
+import React, { useState, useActionState, useEffect } from 'react';
 import { resetPassword } from '@/app/actions';
-import { X, KeyRound, Loader2 } from 'lucide-react';
+import { X, KeyRound, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface ResetModalProps {
   isOpen: boolean;
@@ -12,6 +12,8 @@ interface ResetModalProps {
 
 export default function ResetPasswordModal({ isOpen, onClose, username }: ResetModalProps) {
   const [state, action, pending] = useActionState(resetPassword, null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     if (state?.success) {
@@ -44,25 +46,43 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
           
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">New Password</label>
-            <input 
-              name="password"
-              type="password" 
-              placeholder="••••••••"
-              required
-              autoFocus
-              className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
-            />
+            <div className="group relative">
+              <input 
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                autoFocus
+                className="w-full bg-input-bg border border-input-border rounded-md py-3 pl-4 pr-11 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-dim hover:text-foreground transition-colors duration-300"
+              >
+                {showPassword ? <EyeOff size={16} strokeWidth={1.5} /> : <Eye size={16} strokeWidth={1.5} />}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Confirm New Password</label>
-            <input 
-              name="confirmPassword"
-              type="password" 
-              placeholder="••••••••"
-              required
-              className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
-            />
+            <div className="group relative">
+              <input 
+                name="confirmPassword"
+                type={showConfirm ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                className="w-full bg-input-bg border border-input-border rounded-md py-3 pl-4 pr-11 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-text-dim hover:text-foreground transition-colors duration-300"
+              >
+                {showConfirm ? <EyeOff size={16} strokeWidth={1.5} /> : <Eye size={16} strokeWidth={1.5} />}
+              </button>
+            </div>
           </div>
 
           {state?.error && (

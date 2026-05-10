@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useActionState, useEffect } from 'react';
+import React, { useState, useActionState, useEffect } from 'react';
 import { createCredential } from '@/app/actions';
-import { X, ShieldPlus, Loader2 } from 'lucide-react';
+import { X, ShieldPlus, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface CredentialModalProps {
   isOpen: boolean;
@@ -12,6 +12,17 @@ interface CredentialModalProps {
 
 export default function CredentialModal({ isOpen, onClose, employees }: CredentialModalProps) {
   const [state, action, pending] = useActionState(createCredential, null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const [fields, setFields] = useState({
+    e_id: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const set = (key: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setFields(prev => ({ ...prev, [key]: e.target.value }));
 
   useEffect(() => {
     if (state?.success) {
@@ -39,10 +50,11 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
         <form action={action} className="p-6 space-y-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Select Employee</label>
-            <select 
+            <select
               name="e_id"
               required
-              defaultValue=""
+              value={fields.e_id}
+              onChange={set('e_id')}
               className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all appearance-none cursor-pointer"
             >
               <option value="" disabled className="bg-card-bg">Choose Employee</option>
@@ -56,35 +68,59 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
 
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Username</label>
-            <input 
+            <input
               name="username"
-              type="text" 
+              type="text"
               placeholder="j.doe"
               required
+              value={fields.username}
+              onChange={set('username')}
               className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Password</label>
-              <input 
-                name="password"
-                type="password" 
-                placeholder="••••••••"
-                required
-                className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
-              />
+          <div className="space-y-1.5">
+            {/* Shared label row with visibility toggle */}
+            <div className="flex items-center justify-between ml-1 mr-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-text-dim transition-colors">Password</span>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-text-dim hover:text-foreground transition-colors duration-300"
+              >
+                {showPassword ? <EyeOff size={12} strokeWidth={2} /> : <Eye size={12} strokeWidth={2} />}
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Confirm</label>
-              <input 
-                name="confirmPassword"
-                type="password" 
-                placeholder="••••••••"
-                required
-                className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
-              />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="group relative">
+                <input
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  required
+                  value={fields.password}
+                  onChange={set('password')}
+                  className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                />
+              </div>
+              <div className="group relative">
+                <input
+                  name="confirmPassword"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  required
+                  value={fields.confirmPassword}
+                  onChange={set('confirmPassword')}
+                  className="w-full bg-input-bg border border-input-border rounded-md py-3 px-4 text-sm text-foreground outline-none focus:border-input-focus transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-between px-1 pt-0.5">
+              <span className="text-[10px] text-text-dim uppercase tracking-widest font-medium">Password</span>
+              <span className="text-[10px] text-text-dim uppercase tracking-widest font-medium">Confirm</span>
             </div>
           </div>
 
@@ -95,7 +131,7 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
           )}
 
           <div className="pt-4">
-            <button 
+            <button
               type="submit"
               disabled={pending}
               className="w-full flex items-center justify-center bg-primary-accent border border-primary-accent-border text-white py-3.5 rounded-md text-xs font-bold uppercase tracking-widest hover:bg-primary-accent-hover transition-all disabled:opacity-50"
