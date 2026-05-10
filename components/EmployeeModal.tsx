@@ -12,7 +12,10 @@ interface EmployeeModalProps {
 }
 
 // Must match the server-side nameRegex in actions.ts
-const NAME_REGEX = /^[A-Za-z'\-.\s]+$/;
+const NAME_REGEX    = /^[A-Za-z'\-.\s]+$/;
+const ADDRESS_REGEX = /^[0-9A-Za-z.,\-\s]+$/;
+const DATE_MIN = '1900-01-01';
+const DATE_MAX = '2099-12-31';
 
 // Capitalize the first letter after word-boundary characters (space, hyphen, apostrophe)
 function toNameCase(value: string): string {
@@ -25,7 +28,21 @@ function validateName(value: string, required: boolean): string | null {
   return null;
 }
 
+function validateAddress(value: string): string | null {
+  if (!value.trim()) return 'This field is required.';
+  if (!ADDRESS_REGEX.test(value)) return 'Only letters, numbers, spaces, commas ( , ), periods ( . ), and hyphens ( - ) are allowed.';
+  return null;
+}
+
+function validateDate(value: string, label: string): string | null {
+  if (!value) return `${label} is required.`;
+  const year = parseInt(value.split('-')[0], 10);
+  if (isNaN(year) || year < 1900 || year > 2099) return `${label} must be between ${DATE_MIN} and ${DATE_MAX}.`;
+  return null;
+}
+
 type NameField = 'fname' | 'mname' | 'lname';
+type ValidatedField = NameField | 'address' | 'birth_date' | 'hire_date';
 
 export default function EmployeeModal({ isOpen, onClose, mode, employee }: EmployeeModalProps) {
   const currentAction = mode === 'register' ? registerEmployee : updateEmployee;
@@ -43,21 +60,23 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
     contact_no: employee?.contact_no || '',
   });
 
-  // Track which name fields have been blurred (interacted with)
-  const [touched, setTouched] = useState<Record<NameField, boolean>>({
-    fname: false,
-    mname: false,
-    lname: false,
+  // Track which validated fields have been blurred (interacted with)
+  const [touched, setTouched] = useState<Record<ValidatedField, boolean>>({
+    fname: false, mname: false, lname: false,
+    address: false, birth_date: false, hire_date: false,
   });
 
   // Computed per-field errors — only shown after the field has been touched
-  const nameErrors: Record<NameField, string | null> = {
-    fname: touched.fname ? validateName(fields.fname, true) : null,
-    mname: touched.mname ? validateName(fields.mname, false) : null,
-    lname: touched.lname ? validateName(fields.lname, true) : null,
+  const errors: Record<ValidatedField, string | null> = {
+    fname:      touched.fname      ? validateName(fields.fname, true)           : null,
+    mname:      touched.mname      ? validateName(fields.mname, false)          : null,
+    lname:      touched.lname      ? validateName(fields.lname, true)           : null,
+    address:    touched.address    ? validateAddress(fields.address)            : null,
+    birth_date: touched.birth_date ? validateDate(fields.birth_date, 'Birth date') : null,
+    hire_date:  touched.hire_date  ? validateDate(fields.hire_date, 'Hire date')   : null,
   };
 
-  const hasNameErrors = Object.values(nameErrors).some(Boolean);
+  const hasErrors = Object.values(errors).some(Boolean);
 
   // Re-sync fields when the employee prop changes (e.g. switching which record to edit)
   useEffect(() => {
@@ -72,7 +91,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
       hire_date: employee?.hire_date || '',
       contact_no: employee?.contact_no || '',
     });
-    setTouched({ fname: false, mname: false, lname: false });
+    setTouched({ fname: false, mname: false, lname: false, address: false, birth_date: false, hire_date: false });
   }, [employee]);
 
   useEffect(() => {
@@ -88,17 +107,18 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
   const setName = (key: NameField) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setFields(prev => ({ ...prev, [key]: toNameCase(e.target.value) }));
 
-  const touch = (key: NameField) => () =>
+  const touch = (key: ValidatedField) => () =>
     setTouched(prev => ({ ...prev, [key]: true }));
 
-  // Touch all name fields on submit attempt so errors surface immediately
+  // Touch all validated fields on submit attempt so all errors surface immediately
   const handleSubmitAttempt = () => {
-    setTouched({ fname: true, mname: true, lname: true });
+    setTouched({ fname: true, mname: true, lname: true, address: true, birth_date: true, hire_date: true });
   };
 
   const inputBase = "w-full bg-input-bg border rounded-md py-2.5 px-4 text-sm text-foreground outline-none transition-all";
   const inputNormal = `${inputBase} border-input-border focus:border-input-focus`;
-  const inputError = `${inputBase} border-red-500/60 focus:border-red-500`;
+  const inputError  = `${inputBase} border-red-500/60 focus:border-red-500`;
+  const cls = (key: ValidatedField) => errors[key] ? inputError : inputNormal;
 
   if (!isOpen) return null;
 
@@ -134,13 +154,14 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 name="fname"
                 type="text"
                 required
+                placeholder="Juan"
                 value={fields.fname}
                 onChange={setName('fname')}
                 onBlur={touch('fname')}
-                className={nameErrors.fname ? inputError : inputNormal}
+                className={cls('fname')}
               />
-              {nameErrors.fname && (
-                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{nameErrors.fname}</p>
+              {errors.fname && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.fname}</p>
               )}
             </div>
 
@@ -153,10 +174,10 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 value={fields.mname}
                 onChange={setName('mname')}
                 onBlur={touch('mname')}
-                className={nameErrors.mname ? inputError : inputNormal}
+                className={cls('mname')}
               />
-              {nameErrors.mname && (
-                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{nameErrors.mname}</p>
+              {errors.mname && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.mname}</p>
               )}
             </div>
 
@@ -167,13 +188,14 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 name="lname"
                 type="text"
                 required
+                placeholder="Dela Cruz"
                 value={fields.lname}
                 onChange={setName('lname')}
                 onBlur={touch('lname')}
-                className={nameErrors.lname ? inputError : inputNormal}
+                className={cls('lname')}
               />
-              {nameErrors.lname && (
-                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{nameErrors.lname}</p>
+              {errors.lname && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.lname}</p>
               )}
             </div>
           </div>
@@ -199,10 +221,16 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 name="birth_date"
                 type="date"
                 required
+                min={DATE_MIN}
+                max={DATE_MAX}
                 value={fields.birth_date}
                 onChange={set('birth_date')}
-                className={inputNormal}
+                onBlur={touch('birth_date')}
+                className={cls('birth_date')}
               />
+              {errors.birth_date && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.birth_date}</p>
+              )}
             </div>
           </div>
 
@@ -212,10 +240,15 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
               name="address"
               type="text"
               required
+              placeholder="House/Bldg No., Street, Subdivision/Village, Barangay, City/Municipality, Province, Zip Code"
               value={fields.address}
               onChange={set('address')}
-              className={inputNormal}
+              onBlur={touch('address')}
+              className={cls('address')}
             />
+            {errors.address && (
+              <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.address}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -240,10 +273,16 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
                 name="hire_date"
                 type="date"
                 required
+                min={DATE_MIN}
+                max={DATE_MAX}
                 value={fields.hire_date}
                 onChange={set('hire_date')}
-                className={inputNormal}
+                onBlur={touch('hire_date')}
+                className={cls('hire_date')}
               />
+              {errors.hire_date && (
+                <p className="text-[10px] text-red-500 ml-1 animate-in fade-in slide-in-from-top-1 duration-200">{errors.hire_date}</p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-dim ml-1 transition-colors">Contact No. (11 Digits)</label>
@@ -270,7 +309,7 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
           <div className="pt-6 border-t border-card-border transition-colors">
             <button
               type="submit"
-              disabled={pending || hasNameErrors}
+              disabled={pending || hasErrors}
               onClick={handleSubmitAttempt}
               className="w-full flex items-center justify-center bg-primary-accent border border-primary-accent-border text-white py-4 rounded-md text-xs font-bold uppercase tracking-widest hover:bg-primary-accent-hover transition-all disabled:opacity-50"
             >

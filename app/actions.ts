@@ -15,8 +15,20 @@ const validateSecurityInput = (value: string, fieldName: string) => {
   return null;
 };
 
-const nameRegex = /^[A-Za-z'\-.\s]+$/;
+const nameRegex    = /^[A-Za-z'\-.\s]+$/;
+const addressRegex = /^[0-9A-Za-z.,\-\s]+$/;
+const dateRegex    = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 const phMobileRegex = /^09\d{9}$/;
+
+// Returns an error string if date is invalid/out of range, null otherwise
+function validateDate(value: string, label: string): string | null {
+  if (!value) return `${label} is required.`;
+  if (!dateRegex.test(value)) return `${label} must be in YYYY-MM-DD format.`;
+  const d = new Date(value);
+  const year = d.getUTCFullYear();
+  if (year < 1900 || year > 2099) return `${label} must be between 1900-01-01 and 2099-12-31.`;
+  return null;
+}
 
 export async function login(state: any, formData: FormData) {
   const username = formData.get("username") as string;
@@ -246,8 +258,18 @@ export async function registerEmployee(state: any, formData: FormData) {
   }
 
   if (!nameRegex.test(fname) || !nameRegex.test(lname) || (mname && !nameRegex.test(mname))) {
-    return { error: "Names can only contain letters, numbers, spaces, dots, and hyphens." };
+    return { error: "Names may only contain letters, spaces, apostrophes, hyphens, and periods." };
   }
+
+  if (address && !addressRegex.test(address)) {
+    return { error: "Address may only contain letters, numbers, spaces, commas, periods, and hyphens." };
+  }
+
+  const birthDateError = validateDate(birth_date, 'Birth date');
+  if (birthDateError) return { error: birthDateError };
+
+  const hireDateError = validateDate(hire_date, 'Hire date');
+  if (hireDateError) return { error: hireDateError };
 
   if (!phMobileRegex.test(contact_no)) {
     return { error: "Contact number must be exactly 11 digits and start with 09 (Philippine Standard)." };
@@ -296,8 +318,18 @@ export async function updateEmployee(state: any, formData: FormData) {
   }
 
   if (!nameRegex.test(fname) || !nameRegex.test(lname) || (mname && !nameRegex.test(mname))) {
-    return { error: "Names can only contain letters, numbers, spaces, dots, and hyphens." };
+    return { error: "Names may only contain letters, spaces, apostrophes, hyphens, and periods." };
   }
+
+  if (address && !addressRegex.test(address)) {
+    return { error: "Address may only contain letters, numbers, spaces, commas, periods, and hyphens." };
+  }
+
+  const birthDateError = validateDate(birth_date, 'Birth date');
+  if (birthDateError) return { error: birthDateError };
+
+  const hireDateError = validateDate(hire_date, 'Hire date');
+  if (hireDateError) return { error: hireDateError };
 
   if (!phMobileRegex.test(contact_no)) {
     return { error: "Contact number must be exactly 11 digits and start with 09 (Philippine Standard)." };
