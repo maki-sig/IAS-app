@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { X, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface DeleteConfirmationModalProps {
@@ -13,17 +13,25 @@ interface DeleteConfirmationModalProps {
 }
 
 export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm, title, message, isPending }: DeleteConfirmationModalProps) {
-  if (!isOpen) return null;
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => onClose(), 260);
+  };
+
+  if (!isOpen && !isClosing) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="relative w-full max-w-sm bg-card-bg border border-red-500/20 rounded-xl shadow-[0_0_50px_-12px_rgba(239,68,68,0.3)] overflow-hidden animate-in zoom-in-95 duration-300 transition-colors">
+    <div className={`fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}>
+      <div className={`relative w-full max-w-sm bg-card-bg border border-red-500/20 rounded-xl shadow-[0_0_50px_-12px_rgba(239,68,68,0.3)] overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-bounce'}`}> 
         <header className="px-6 py-4 border-b border-card-border flex items-center justify-between bg-red-500/5 transition-colors">
           <div className="flex items-center gap-3">
             <AlertTriangle size={18} className="text-red-500" />
             <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-red-500">{title}</h3>
           </div>
-          <button onClick={onClose} className="text-text-dim hover:text-foreground transition-colors">
+          <button onClick={handleClose} className="text-text-dim hover:text-foreground transition-colors">
             <X size={18} />
           </button>
         </header>
@@ -42,7 +50,7 @@ export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm, ti
               {isPending ? <Loader2 size={16} className="animate-spin" /> : "Confirm Deletion"}
             </button>
             <button 
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isPending}
               className="w-full py-3 rounded-md text-[10px] font-bold uppercase tracking-widest text-text-dim hover:text-foreground transition-all"
             >
