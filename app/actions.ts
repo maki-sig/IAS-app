@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
+import { encryptFields, ENCRYPTED_FIELDS } from "@/utils/encryption";
 
 // Security Validation Helper
 const validateSecurityInput = (value: string, fieldName: string) => {
@@ -311,9 +312,13 @@ export async function registerEmployee(state: any, formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("EMPLOYEE").insert({
+  // Encrypt sensitive fields before storing
+  const employeeData = {
     fname, mname, lname, sex, address, birth_date, role, hire_date, contact_no
-  });
+  };
+  const encryptedData = encryptFields(employeeData, ENCRYPTED_FIELDS as any);
+
+  const { error } = await supabase.from("EMPLOYEE").insert(encryptedData);
 
   if (error) {
     console.error(error);
@@ -371,9 +376,13 @@ export async function updateEmployee(state: any, formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from("EMPLOYEE").update({
+  // Encrypt sensitive fields before storing
+  const employeeData = {
     fname, mname, lname, sex, address, birth_date, role, hire_date, contact_no
-  }).eq("e_id", parseInt(e_id));
+  };
+  const encryptedData = encryptFields(employeeData, ENCRYPTED_FIELDS as any);
+
+  const { error } = await supabase.from("EMPLOYEE").update(encryptedData).eq("e_id", parseInt(e_id));
 
   if (error) {
     console.error(error);

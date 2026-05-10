@@ -1,5 +1,6 @@
 import React from 'react';
 import { createClient } from '@/utils/supabase/server';
+import { decryptFields, ENCRYPTED_FIELDS } from '@/utils/encryption';
 import DashboardClient from '@/components/DashboardClient';
 
 export default async function DashboardContent({ tab }: { tab: string }) {
@@ -12,7 +13,8 @@ export default async function DashboardContent({ tab }: { tab: string }) {
 
   if (tab === 'employees') {
     const { data } = await supabase.from('EMPLOYEE').select('*').order('lname');
-    employees = data;
+    // Decrypt sensitive fields after fetching
+    employees = data ? data.map(emp => decryptFields(emp, ENCRYPTED_FIELDS as any)) : null;
   } else if (tab === 'logs') {
     const { data } = await supabase.from('LOGIN_LOGS').select('*').order('login_timestamp', { ascending: false }).limit(100);
     logs = data;
@@ -35,13 +37,16 @@ export default async function DashboardContent({ tab }: { tab: string }) {
       .select('e_id, fname, lname')
       .order('lname');
 
+    // Decrypt employee names for the dropdown
+    const decryptedEmpListData = empListData ? empListData.map(emp => decryptFields(emp, ['fname', 'lname'] as any)) : [];
+    
     // Only offer employees without credentials in the dropdown
-    employees = (empListData || []).filter((e: any) => !credentialledIds.has(e.e_id));
+    employees = decryptedEmpListData.filter((e: any) => !credentialledIds.has(e.e_id));
 
     if (userError) {
       console.error("Error fetching users:", userError);
     } else if (userData) {
-      const empMap = new Map(empListData?.map(e => [e.e_id, e]));
+      const empMap = new Map(decryptedEmpListData.map(e => [e.e_id, e]));
       users = userData.map(u => ({
         ...u,
         EMPLOYEE: empMap.get(u.e_id) || null
