@@ -130,8 +130,14 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
   if (!isOpen && !isClosing) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}>
-      <div className={`relative w-full max-w-2xl bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-slide-up'}`}>
+    <div
+      onClick={handleClose}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className={`relative w-full max-w-2xl bg-card-bg border border-card-border rounded-xl shadow-2xl overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-slide-up'}`}
+      >
         <header className="px-6 py-5 border-b border-card-border flex items-center justify-between transition-colors">
           <div className="flex items-center gap-3">
             <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-input-bg border border-input-border transition-colors">

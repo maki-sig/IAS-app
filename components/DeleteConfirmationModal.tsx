@@ -24,8 +24,13 @@ export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm, ti
   if (!isOpen && !isClosing) return null;
 
   return (
-    <div className={`fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}>
-      <div className={`relative w-full max-w-sm bg-card-bg border border-red-500/20 rounded-xl shadow-[0_0_50px_-12px_rgba(239,68,68,0.3)] overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-bounce'}`}> 
+    <div
+      onClick={handleClose}
+      className={`fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+    >
+      <div
+        onClick={(event) => event.stopPropagation()}
+        className={`relative w-full max-w-sm bg-card-bg border border-red-500/20 rounded-xl shadow-[0_0_50px_-12px_rgba(239,68,68,0.3)] overflow-hidden transition-all ${isClosing ? 'animate-modal-exit' : 'animate-modal-bounce'}`}> 
         <header className="px-6 py-4 border-b border-card-border flex items-center justify-between bg-red-500/5 transition-colors">
           <div className="flex items-center gap-3">
             <AlertTriangle size={18} className="text-red-500" />
