@@ -134,18 +134,33 @@ export async function createCredential(state: any, formData: FormData) {
     return { error: "Passwords do not match" };
   }
 
-  const usernameRegex = /^[a-zA-Z0-9._-]+$/;
+  // Username: 1–39 chars, allowed chars, no consecutive hyphens
+  const usernameRegex = /^[A-Za-z0-9-]+$/;
+  if (!username || username.length < 1 || username.length > 39) {
+    return { error: "Username must be between 1 and 39 characters." };
+  }
   if (!usernameRegex.test(username)) {
-    return { error: "Invalid username format." };
+    return { error: "Username contains invalid characters." };
+  }
+  if (/--/.test(username)) {
+    return { error: "Username cannot contain consecutive hyphens." };
   }
 
-  const forbiddenChars = /[<>"';()]/;
-  if (forbiddenChars.test(password)) {
-    return { error: "Password contains forbidden characters." };
-  }
-
+  // Password complexity: min 8, uppercase, lowercase, digit, symbol
   if (password.length < 8) {
     return { error: "Password must be at least 8 characters long." };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { error: "Password must contain at least one uppercase letter." };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { error: "Password must contain at least one lowercase letter." };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { error: "Password must contain at least one number." };
+  }
+  if (!/[!@#$%^&*()_+\-=]/.test(password)) {
+    return { error: "Password must contain at least one symbol." };
   }
 
   const supabase = await createClient();
@@ -158,6 +173,17 @@ export async function createCredential(state: any, formData: FormData) {
 
   if (empError || !employee) {
     return { error: "Employee ID not found" };
+  }
+
+  // Guard: ensure this employee doesn't already have credentials (1:1 enforcement)
+  const { data: existingCredByEmp } = await supabase
+    .from("USER")
+    .select("username")
+    .eq("e_id", parseInt(e_id))
+    .single();
+
+  if (existingCredByEmp) {
+    return { error: "This employee already has credentials assigned." };
   }
 
   const { data: existingUser } = await supabase
@@ -203,13 +229,21 @@ export async function resetPassword(state: any, formData: FormData) {
     return { error: "Passwords do not match" };
   }
 
-  const forbiddenChars = /[<>"';()]/;
-  if (forbiddenChars.test(password)) {
-    return { error: "Password contains forbidden characters." };
-  }
-
+  // Password complexity: min 8, uppercase, lowercase, digit, symbol
   if (password.length < 8) {
     return { error: "Password must be at least 8 characters long." };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { error: "Password must contain at least one uppercase letter." };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { error: "Password must contain at least one lowercase letter." };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { error: "Password must contain at least one number." };
+  }
+  if (!/[!@#$%^&*()_+\-=]/.test(password)) {
+    return { error: "Password must contain at least one symbol." };
   }
 
   const supabase = await createClient();

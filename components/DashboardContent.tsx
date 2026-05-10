@@ -23,13 +23,20 @@ export default async function DashboardContent({ tab }: { tab: string }) {
       .select('*')
       .order('username');
     
-    // Also fetch employees for the modal selection
+    // Fetch employees who do NOT yet have credentials (1:1 enforcement at data layer)
+    const { data: usersWithCreds } = await supabase
+      .from('USER')
+      .select('e_id');
+
+    const credentialledIds = new Set((usersWithCreds || []).map((u: any) => u.e_id));
+
     const { data: empListData } = await supabase
       .from('EMPLOYEE')
       .select('e_id, fname, lname')
       .order('lname');
-    
-    employees = empListData;
+
+    // Only offer employees without credentials in the dropdown
+    employees = (empListData || []).filter((e: any) => !credentialledIds.has(e.e_id));
 
     if (userError) {
       console.error("Error fetching users:", userError);
