@@ -3,6 +3,7 @@
 import React, { useState, useActionState, useEffect } from 'react';
 import { resetPassword } from '@/app/actions';
 import { X, KeyRound, Loader2, Eye, EyeOff, Check, Minus } from 'lucide-react';
+import { useToast } from './Toast';
 
 interface ResetModalProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ function StrengthRow({ met, label }: { met: boolean; label: string }) {
 
 // ── Component ─────────────────────────────────────────────────────────────
 export default function ResetPasswordModal({ isOpen, onClose, username }: ResetModalProps) {
+  const { addToast } = useToast();
   const [state, action, pending] = useActionState(resetPassword, null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -78,7 +80,16 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
     setTimeout(() => onClose(), 180);
   };
 
-  useEffect(() => { if (state?.success) handleClose(); }, [state?.success]);
+  useEffect(() => {
+    if (state?.success) {
+      addToast({
+        type: 'success',
+        title: 'Password Reset',
+        message: 'Password has been successfully reset.'
+      });
+      handleClose();
+    }
+  }, [state?.success]);
 
   if ((!isOpen && !isClosing) || !username) return null;
 

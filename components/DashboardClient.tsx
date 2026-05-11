@@ -13,6 +13,7 @@ import ResetPasswordModal from './ResetPasswordModal';
 import EmployeeModal from './EmployeeModal';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
 import Sidebar from './Sidebar';
+import { useToast } from './Toast';
 import { deleteEmployee, deleteCredential } from '@/app/actions';
 
 interface DashboardClientProps {
@@ -32,6 +33,7 @@ export default function DashboardClient({
   users,
   credentialEmployees,
 }: DashboardClientProps) {
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isCredentialModalOpen, setIsCredentialModalOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -98,17 +100,41 @@ export default function DashboardClient({
     setIsDeleteModalOpen(true);
   };
 
-  const handleConfirmDelete = () => {
-    startTransition(async () => {
+  const handleConfirmDelete = async () => {
+    try {
+      let result;
       if (deleteType === 'employee') {
-        await deleteEmployee(itemToDelete.e_id);
+        result = await deleteEmployee(itemToDelete.e_id);
       } else if (deleteType === 'credential') {
-        await deleteCredential(itemToDelete);
+        result = await deleteCredential(itemToDelete);
       }
+
+      if (result?.success) {
+        addToast({
+          type: 'success',
+          title: deleteType === 'employee' ? 'Employee Deleted' : 'Credential Deleted',
+          message: deleteType === 'employee' 
+            ? 'Employee record has been successfully deleted.'
+            : 'User credentials have been successfully deleted.'
+        });
+      } else if (result?.error) {
+        addToast({
+          type: 'error',
+          title: 'Delete Failed',
+          message: result.error
+        });
+      }
+
       setIsDeleteModalOpen(false);
       setItemToDelete(null);
       setDeleteType(null);
-    });
+    } catch (error) {
+      addToast({
+        type: 'error',
+        title: 'Delete Failed',
+        message: 'An unexpected error occurred.'
+      });
+    }
   };
 
   const visibleEmployees = employees ?? [];
@@ -288,8 +314,11 @@ export default function DashboardClient({
                     key={user.username}
                     className="rounded-lg border border-card-border bg-card-bg p-5 shadow-xl hover:border-input-focus hover:shadow-2xl transition-all duration-300 group"
                     style={{
+                      animationName: searchAnimationKey > 0 ? 'fadeInUp' : 'none',
+                      animationDuration: '0.5s',
+                      animationTimingFunction: 'ease-out',
                       animationDelay: `${index * 75}ms`,
-                      animation: searchAnimationKey > 0 ? `fadeInUp 0.5s ease-out ${index * 75}ms both` : 'none'
+                      animationFillMode: 'both'
                     }}
                   >
                     <div className="flex items-center justify-between mb-4">

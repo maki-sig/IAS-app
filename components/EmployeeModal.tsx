@@ -3,6 +3,7 @@
 import React, { useState, useActionState, useEffect } from 'react';
 import { registerEmployee, updateEmployee } from '@/app/actions';
 import { X, UserPlus, Loader2, Save } from 'lucide-react';
+import { useToast } from './Toast';
 
 interface EmployeeModalProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ type NameField = 'fname' | 'mname' | 'lname';
 type ValidatedField = NameField | 'address' | 'birth_date' | 'hire_date';
 
 export default function EmployeeModal({ isOpen, onClose, mode, employee }: EmployeeModalProps) {
+  const { addToast } = useToast();
   const currentAction = mode === 'register' ? registerEmployee : updateEmployee;
   const [state, action, pending] = useActionState(currentAction, null);
   const [isClosing, setIsClosing] = useState(false);
@@ -103,6 +105,13 @@ export default function EmployeeModal({ isOpen, onClose, mode, employee }: Emplo
 
   useEffect(() => {
     if (state?.success) {
+      addToast({
+        type: 'success',
+        title: mode === 'register' ? 'Employee Registered' : 'Employee Updated',
+        message: mode === 'register' 
+          ? 'New employee has been successfully registered.'
+          : 'Employee information has been successfully updated.'
+      });
       handleClose();
     }
   }, [state?.success]);

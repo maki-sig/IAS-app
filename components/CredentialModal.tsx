@@ -3,6 +3,7 @@
 import React, { useState, useActionState, useEffect } from 'react';
 import { createCredential } from '@/app/actions';
 import { X, ShieldPlus, Loader2, Eye, EyeOff, Check, Minus } from 'lucide-react';
+import { useToast } from './Toast';
 
 interface CredentialModalProps {
   isOpen: boolean;
@@ -60,6 +61,7 @@ function StrengthRow({ met, label }: { met: boolean; label: string }) {
 
 // ── Component ─────────────────────────────────────────────────────────────
 export default function CredentialModal({ isOpen, onClose, employees }: CredentialModalProps) {
+  const { addToast } = useToast();
   const [state, action, pending] = useActionState(createCredential, null);
   const [showPassword, setShowPassword] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -96,7 +98,14 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
   };
 
   useEffect(() => {
-    if (state?.success) handleClose();
+    if (state?.success) {
+      addToast({
+        type: 'success',
+        title: 'Credential Created',
+        message: 'Employee credentials have been successfully created.'
+      });
+      handleClose();
+    }
   }, [state?.success]);
 
   if (!isOpen && !isClosing) return null;
@@ -162,7 +171,7 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
             <input
               name="username"
               type="text"
-              placeholder="j.doe"
+              placeholder="j-cruz"
               required
               maxLength={39}
               value={fields.username}

@@ -114,11 +114,7 @@ export async function login(state: any, formData: FormData) {
     path: "/",
   });
 
-  if (employee.role === "admin") {
-    redirect("/dashboard");
-  } else {
-    redirect("/welcome");
-  }
+  return { success: true, role: employee.role };
 }
 
 export async function createCredential(state: any, formData: FormData) {
