@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { decodeSession, SESSION_COOKIE_NAME } from '@/utils/session';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -35,8 +36,9 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Check for authentication via username cookie (custom auth system)
-  const isAuthenticated = !!request.cookies.get('username')?.value
+  const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value
+  const session = decodeSession(sessionToken)
+  const isAuthenticated = !!session
 
   if (
     !isAuthenticated &&
@@ -52,8 +54,7 @@ export async function updateSession(request: NextRequest) {
 
   // Role-based access control for dashboard
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    const role = request.cookies.get('user_role')?.value
-    if (role !== 'admin') {
+    if (!session || session.role !== 'admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/welcome'
       return NextResponse.redirect(url)

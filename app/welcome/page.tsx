@@ -2,11 +2,15 @@ import React from 'react';
 import { logout } from '@/app/actions';
 import { cookies } from 'next/headers';
 import { LogOut, User as UserIcon } from 'lucide-react';
+import { decodeSession, SESSION_COOKIE_NAME } from '@/utils/session';
+import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 
 export async function generateMetadata(): Promise<Metadata> {
   const cookieStore = await cookies();
-  const role = cookieStore.get('user_role')?.value;
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = decodeSession(sessionToken);
+  const role = session?.role;
 
   return {
     title: `IAS-App | ${role === 'manager' ? 'Manager' : 'Employee'}`,
@@ -15,7 +19,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function WelcomePage() {
   const cookieStore = await cookies();
-  const username = cookieStore.get('username')?.value || 'Employee';
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = decodeSession(sessionToken);
+
+  if (!session) {
+    redirect('/');
+  }
+
+  const username = session.username || 'Employee';
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4 text-foreground selection:bg-primary-accent/20 transition-colors duration-300">

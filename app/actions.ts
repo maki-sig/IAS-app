@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 import { encryptFields, ENCRYPTED_FIELDS } from "@/utils/encryption";
+import { createSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE } from "@/utils/session";
 
 // Security Validation Helper
 const validateSecurityInput = (value: string, fieldName: string) => {
@@ -103,16 +104,18 @@ export async function login(state: any, formData: FormData) {
   }
 
   const cookieStore = await cookies();
-  cookieStore.set("user_role", employee.role, {
+  const sessionToken = createSessionToken(username, employee.role);
+  cookieStore.set(SESSION_COOKIE_NAME, sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     path: "/",
+    sameSite: "lax",
+    maxAge: SESSION_MAX_AGE,
   });
-  cookieStore.set("username", username, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  });
+
+  // Remove legacy cookies if present, and keep the session token as the single source of truth.
+  cookieStore.delete("user_role");
+  cookieStore.delete("username");
 
   return { success: true, role: employee.role };
 }
@@ -444,6 +447,7 @@ async function logAttempt(username: string, status: "P" | "F") {
 
 export async function logout() {
   const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE_NAME);
   cookieStore.delete("user_role");
   cookieStore.delete("username");
   redirect("/");
