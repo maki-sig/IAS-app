@@ -92,7 +92,7 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
   const handleClose = () => {
     if (isClosing) return;
     setIsClosing(true);
-    setTimeout(() => onClose(), 260);
+    setTimeout(() => onClose(), 180);
   };
 
   useEffect(() => {
@@ -112,7 +112,7 @@ export default function CredentialModal({ isOpen, onClose, employees }: Credenti
   return (
     <div
       onClick={handleClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 ${isClosing ? 'animate-overlay-fade-out' : 'animate-overlay-fade-in'}`}
     >
       <div
         onClick={(event) => event.stopPropagation()}

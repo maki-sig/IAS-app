@@ -75,7 +75,7 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
   const handleClose = () => {
     if (isClosing) return;
     setIsClosing(true);
-    setTimeout(() => onClose(), 260);
+    setTimeout(() => onClose(), 180);
   };
 
   useEffect(() => { if (state?.success) handleClose(); }, [state?.success]);
@@ -92,7 +92,7 @@ export default function ResetPasswordModal({ isOpen, onClose, username }: ResetM
   return (
     <div
       onClick={handleClose}
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 ${isClosing ? 'animate-overlay-fade-out' : 'animate-overlay-fade-in'}`}
     >
       <div
         onClick={(event) => event.stopPropagation()}

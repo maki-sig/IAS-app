@@ -173,18 +173,19 @@ body {
   }
 }
 
-/* Enhanced Modal Animations */
+/* Enhanced Modal Animations - Snappy but Buttery Smooth */
 @keyframes modalBounceIn {
   0% {
     opacity: 0;
-    transform: scale(0.92) translateY(30px);
+    transform: scale(0.88) translateY(24px);
   }
-  45% {
+  50% {
+    opacity: 0.9;
+    transform: scale(1.02) translateY(-4px);
+  }
+  75% {
     opacity: 1;
-    transform: scale(1.03) translateY(-6px);
-  }
-  70% {
-    transform: scale(0.99) translateY(2px);
+    transform: scale(0.995) translateY(1px);
   }
   100% {
     opacity: 1;
@@ -195,7 +196,7 @@ body {
 @keyframes modalSlideUp {
   0% {
     opacity: 0;
-    transform: translateY(28px) scale(0.98);
+    transform: translateY(20px) scale(0.96);
   }
   100% {
     opacity: 1;
@@ -206,7 +207,7 @@ body {
 @keyframes modalScaleIn {
   0% {
     opacity: 0;
-    transform: scale(0.92) translateY(14px);
+    transform: scale(0.9) translateY(12px);
   }
   100% {
     opacity: 1;
@@ -221,38 +222,55 @@ body {
   }
   100% {
     opacity: 0;
-    transform: scale(0.95) translateY(16px);
+    transform: scale(0.94) translateY(12px);
+  }
+}
+
+@keyframes overlayFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(8px);
   }
 }
 
 @keyframes overlayFadeOut {
   0% {
     opacity: 1;
+    backdrop-filter: blur(8px);
   }
   100% {
     opacity: 0;
+    backdrop-filter: blur(0px);
   }
 }
 
 /* Utility classes for enhanced animations */
 .animate-modal-bounce {
-  animation: modalBounceIn 0.38s cubic-bezier(0.25, 0.85, 0.33, 1.03) forwards;
+  animation: modalBounceIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .animate-modal-slide-up {
-  animation: modalSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: modalSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-modal-scale {
-  animation: modalScaleIn 0.24s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-modal-exit {
-  animation: modalExit 0.18s ease-in forwards;
+  animation: modalExit 0.16s cubic-bezier(0.4, 0.0, 1, 1) forwards;
 }
 
 .animate-overlay-fade-out {
-  animation: overlayFadeOut 0.25s ease-in forwards;
+  animation: overlayFadeOut 0.2s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+.animate-overlay-fade-in {
+  animation: overlayFadeIn 0.25s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
 }
 
 /* Utility classes for animations */

@@ -18,7 +18,7 @@ export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm, ti
   const handleClose = () => {
     if (isClosing) return;
     setIsClosing(true);
-    setTimeout(() => onClose(), 260);
+    setTimeout(() => onClose(), 180);
   };
 
   if (!isOpen && !isClosing) return null;
@@ -26,7 +26,7 @@ export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm, ti
   return (
     <div
       onClick={handleClose}
-      className={`fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md ${isClosing ? 'animate-overlay-fade-out' : 'animate-in fade-in'} duration-300`}
+      className={`fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 ${isClosing ? 'animate-overlay-fade-out' : 'animate-overlay-fade-in'}`}
     >
       <div
         onClick={(event) => event.stopPropagation()}
