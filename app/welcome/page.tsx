@@ -2,6 +2,16 @@ import React from 'react';
 import { logout } from '@/app/actions';
 import { cookies } from 'next/headers';
 import { LogOut, User as UserIcon } from 'lucide-react';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const role = cookieStore.get('user_role')?.value;
+
+  return {
+    title: `IAS-App | ${role === 'manager' ? 'Manager' : 'Employee'}`,
+  };
+}
 
 export default async function WelcomePage() {
   const cookieStore = await cookies();

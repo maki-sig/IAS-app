@@ -1,6 +1,11 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import DashboardContent from '@/components/DashboardContent';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'IAS-App | Admin',
+};
 
 interface PageProps {
   searchParams: Promise<{ tab?: string }>;
