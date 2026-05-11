@@ -218,10 +218,13 @@ export default function DashboardClient({
                       {filteredEmployees.map((emp, index) => (
                         <tr
                           key={emp.e_id}
-                          className="group hover:bg-table-hover dark:hover:bg-white/10 hover:shadow-sm transition-all duration-200 cursor-pointer"
+                          className="group hover:bg-table-hover dark:hover:bg-white/10 hover:shadow-sm transition-all duration-200 cursor-default"
                           style={{
+                            animationName: searchAnimationKey > 0 ? 'fadeInUp' : 'none',
+                            animationDuration: '0.4s',
+                            animationTimingFunction: 'ease-out',
                             animationDelay: `${index * 50}ms`,
-                            animation: searchAnimationKey > 0 ? `fadeInUp 0.4s ease-out ${index * 50}ms both` : 'none'
+                            animationFillMode: 'both'
                           }}
                         >
                           <td className="py-4 px-6">
