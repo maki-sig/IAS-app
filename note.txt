@@ -3,9 +3,9 @@ Checklist for 5/10/26
     1. /    Identify types of data (sensitive, personal, public, etc.)
     2. /    Determine which data should be encrypted 1 way and 2 way, and which should not be encrypted at all
     3. /    Check input validation in all input fields
-    4, Check if application complies with IAS instructions completely
-    5. Ensure the application implements most of the past IAS lessons
+    4, /    Check if application complies with IAS instructions completely
+    5. /    Ensure the application implements most of the past IAS lessons
     6. /    Double-check application and ensure security practices are followed (role-based access, input validation, encryption, etc)
-    7. Create latest documentation such as ERD and DD for compliance
+    7. /    Create latest documentation such as ERD and DD for compliance
     8, /    Integrate password view toggle for credentials form
     9. /    Prevent forms from clearing inputs when data is invalid (only clear errors)
