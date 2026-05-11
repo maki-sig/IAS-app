@@ -34,7 +34,7 @@ export default function Sidebar({ activeTab, username, onTabChange }: SidebarPro
       <div className="mb-10 px-2 flex justify-between items-start">
         <div>
           <h1 className="text-xs font-bold tracking-[0.1em] text-foreground uppercase transition-colors duration-300">ADMIN PORTAL</h1>
-          <p className="text-[9px] uppercase tracking-[0.15em] text-text-dim font-medium mt-0.5 transition-colors duration-300">M. BOTIS | IAS - Management Hub</p>
+          <p className="text-[9px] uppercase tracking-[0.15em] text-text-dim font-medium mt-0.5 transition-colors duration-300">IAS - Management Hub by M. BOTIS</p>
         </div>
         <button 
           onClick={toggleTheme}
