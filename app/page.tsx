@@ -3,29 +3,18 @@
 import React, { useState, useActionState, useEffect } from 'react';
 import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { login } from '@/app/actions';
-import { useToast } from '@/components/Toast';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const { addToast } = useToast();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [state, action, pending] = useActionState(login, null);
 
   useEffect(() => {
     if (state?.success) {
-      addToast({
-        type: 'success',
-        title: 'Login Successful',
-        message: 'Welcome back! Redirecting to your dashboard...'
-      });
-      
-      // Redirect after a short delay to allow the toast to be seen
-      setTimeout(() => {
-        router.push(state.role === 'admin' ? '/dashboard' : '/welcome');
-      }, 1500);
+      router.push(state.role === 'admin' ? '/dashboard' : '/welcome');
     }
-  }, [state?.success, state?.role, addToast, router]);
+  }, [state?.success, state?.role, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4 text-foreground selection:bg-primary-accent/20 transition-colors duration-300">
